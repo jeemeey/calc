@@ -1,7 +1,6 @@
 # Smart Compound + Recovery + Sharing
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 from io import BytesIO
 import smtplib
 from email.message import EmailMessage
@@ -202,32 +201,113 @@ with tabs[1]:
         st.dataframe(w_df)
 
 # === Tab 3 ===
+
 with tabs[2]:
-    st.subheader("🤝 Shared Strategy")
+    st.subheader("🤝 Shared Strategy: Custom Profit Split & Fast Recovery")
+
     col1, col2 = st.columns(2)
     with col1:
-        s_initinv = st.number_input("Initial Investment", 500.0, step=50.0, key="init_inv_1")
-        sched_str = st.text_area("Gain Schedule", "1-10:3.3,11-20:2.2,21-30:4.4")
-        people = st.number_input("People Sharing Profit", 2, step=1)
+        invest = st.number_input("Initial Investment", value=10000.0, step=100.0)
+        schedule_str = st.text_area("Gain Schedule (e.g. 1-10:3.3,11-20:2.2)", "1-10:3.3,11-20:2.2,21-30:4.4")
     with col2:
-        split = st.number_input("Recovery Split Ratio (e.g. 0.5 = 50% to recovery)", min_value=0.0, max_value=1.0, value=0.5, step=0.05)
+        split_ratio = st.number_input("Recovery Split Ratio", min_value=0.0, max_value=1.0, value=0.5, step=0.05)
+        people_count = st.number_input("Number of People Sharing Profit", min_value=1, value=2, step=1)
 
-    sched = []
-    for s in sched_str.split(","):
+    # Parse schedule
+    schedule = []
+    for s in schedule_str.split(","):
         if ":" in s:
-            rng, pct = s.split(":")
-            frm, to = map(int, rng.split("-"))
-            sched.append({"from": frm, "to": to, "rate": float(pct)})
+            range_part, rate = s.split(":")
+            start, end = map(int, range_part.split("-"))
+            schedule.append({"from": start, "to": end, "rate": float(rate)})
 
-    if st.button("▶️ Run Shared Strategy"):
-        df, recov, days = shared_strategy(s_initinv, sched, split, people)
-        st.success(f"✅ Recovery in {days} days")
-        share_cols = [f"Person {i} Share" for i in range(1, people + 1)]
-        st.line_chart(df.set_index("Day")[["Recovered"] + share_cols])
-        st.dataframe(df)
-        st.download_button("⬇️ Download Excel", data=convert_df_to_excel(df), file_name="shared_plan.xlsx")
+    # Custom names and ratios
+    names = []
+    ratios = []
+    st.markdown("### 🔧 Custom Profit Split Ratio")
+    for i in range(1, people_count + 1):
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            name = st.text_input(f"Name of Person {i}", value=f"Person {i}", key=f"name{i}")
+        with col2:
+            ratio = st.number_input(f"{name}'s Share (%)", min_value=0.0, max_value=100.0,
+                                    value=round(100 / people_count, 2), key=f"ratio{i}")
+        names.append(name)
+        ratios.append(ratio)
+
+    total_ratio = sum(ratios)
+    if abs(total_ratio - 100.0) > 0.01:
+        st.error(f"⚠️ Total ratio must equal 100%. Current total: {total_ratio:.2f}%")
+    else:
+        if st.button("▶️ Run Custom Sharing Strategy"):
+            rows = []
+            balance = invest
+            recovered = 0
+            goal = invest
+            day = 1
+
+            while recovered < goal:
+                rate = next((s['rate'] for s in schedule if s['from'] <= day <= s['to']), schedule[-1]['rate'])
+                profit = balance * (rate / 100)
+                recovery_part = profit * split_ratio
+                shared_part = profit * (1 - split_ratio)
+
+                recovered_today = min(recovery_part, goal - recovered)
+                recovered += recovered_today
+                balance += profit - recovered_today
+
+                row = {
+                    "Day": day,
+                    "Rate %": rate,
+                    "Profit": round(profit, 2),
+                    "Recovered": round(recovered_today, 2),
+                    "Balance": round(balance, 2),
+                    "Remaining to Recover": round(goal - recovered, 2)
+                }
+
+                for name, ratio in zip(names, ratios):
+                    row[f"{name} Share"] = round(shared_part * (ratio / 100), 2)
+
+                rows.append(row)
+                day += 1
+
+            df = pd.DataFrame(rows)
+            st.success(f"✅ Full Recovery Achieved in {day - 1} days")
+
+            share_cols = [f"{name} Share" for name in names]
+            st.line_chart(df.set_index("Day")[["Recovered"] + share_cols])
+            st.dataframe(df)
+
+            # Manual day range inputs
+            st.markdown("### 🎯 Analyze by Manual Day Range")
+            max_day = int(df["Day"].max())
+            start_day = st.number_input("Start Day", min_value=1, max_value=max_day, value=1, key="start_day_input")
+            end_day = st.number_input("End Day", min_value=start_day, max_value=max_day, value=max_day, key="end_day_input")
+
+            range_df = df[(df["Day"] >= start_day) & (df["Day"] <= end_day)]
+            selected_cols = st.multiselect("Choose People to Analyze", share_cols, default=share_cols, key="manual_range_cols")
+
+            if selected_cols:
+             try:
+                 selected_range = range_df[selected_cols]
+
+                 if selected_range.empty:
+                  st.warning("⚠️ No data in selected range.")
+                 else:
+                   st.write("📊 Totals:", selected_range.sum().round(2))
+                   st.write("📈 Averages:", selected_range.mean().round(2))
+                   st.write("🔺 Max:", selected_range.max().round(2))
+                   st.write("🔻 Min:", selected_range.min().round(2))
+                   st.line_chart(selected_range)
+             except KeyError as e:
+                   st.error(f"🚫 Invalid column selection: {e}")
+             except Exception as e:
+                   st.error(f"💥 Unexpected error: {e}")
+            else:
+                   st.info("Choose at least one column to view stats.")
+
 
 # Footer
 st.markdown("---")
 st.caption("Made with ❤️ by Engineer / Ahmed Elmorsy | Everything is editable on my laptop "
-"For any Request or Suggestion feel free | contact me anytime on Gmail: Jemey.Embeddedsys@Gmail.com")
+"For any Request or Suggestion feel free | contact me anytime on Gmail: Jemey.Embeddedsys@Gmail.com") 
