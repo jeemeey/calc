@@ -8,8 +8,7 @@ import os
 import datetime
 from PIL import Image
 import re
-import pytesseract
-pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+
 
 
 # === Compound Growth ===
@@ -316,69 +315,64 @@ with tabs[2]:
             else:
                    st.info("Choose at least one column to view stats.")
 with tabs[3]:
-    st.subheader("📊 Chart Analysis: Auto Summary from Visual Trends")
+    st.subheader("📊 Pro Price Trend Analyzer (Manual Input - Cloud Friendly)")
 
     st.markdown("""
-    Upload a chart image (screenshot of crypto chart) and we'll attempt to:
-    - Extract numbers using OCR
-    - Filter clean prices
-    - Count up/down moves
-    - Summarize it like a trading assistant
+    Paste your price points (from TradingView, Binance, etc) and get a detailed analysis:
+    - 🔼 Count of Up Moves
+    - 🔽 Count of Down Moves
+    - 📈 Longest Uptrend / 📉 Longest Downtrend
+    - 🔁 Reversal detection
+    - 🧠 Summary insights
     """)
 
-    uploaded_chart = st.file_uploader("Upload Chart Image", type=["png", "jpg", "jpeg"], key="upload_chart")
+    price_input = st.text_area("Paste price list (comma-separated or line-by-line)", "83000, 82500, 82000, 82700, 83400, 82900, 82100, 81000")
 
-    if uploaded_chart:
+    if price_input:
+        # Parse the prices
+        raw_prices = [s.strip() for s in price_input.replace("\n", ",").split(",")]
         try:
-            from PIL import Image
-            import pytesseract
-            import re
+            prices = [float(p.replace(",", "")) for p in raw_prices if float(p.replace(",", "")) > 1000]
+            if len(prices) < 2:
+                st.warning("Please enter at least two valid prices.")
+            else:
+                # Trend analysis
+                up_moves = sum(1 for i in range(1, len(prices)) if prices[i] > prices[i - 1])
+                down_moves = sum(1 for i in range(1, len(prices)) if prices[i] < prices[i - 1])
 
-            image = Image.open(uploaded_chart)
-            st.image(image, caption="Uploaded Chart", use_column_width=True)
+                # Longest streaks
+                up_streak = down_streak = max_up = max_down = 0
+                for p1, p2 in zip(prices, prices[1:]):
+                    if p2 > p1:
+                        up_streak += 1
+                        down_streak = 0
+                    elif p2 < p1:
+                        down_streak += 1
+                        up_streak = 0
+                    else:
+                        up_streak = down_streak = 0
+                    max_up = max(max_up, up_streak)
+                    max_down = max(max_down, down_streak)
 
-            st.info("⏳ Extracting data from chart...")
+                # Reversal detection
+                reversals = sum(1 for i in range(2, len(prices)) if (prices[i] - prices[i-1]) * (prices[i-1] - prices[i-2]) < 0)
 
-            extracted_text = pytesseract.image_to_string(image)
+                st.success("✅ Analysis Complete")
 
-            # Raw matches
-            price_matches = re.findall(r'\d{2,6}(?:,\d{3})*(?:\.\d+)?', extracted_text)
+                st.markdown(f"""
+                ### 🧠 Summary
+                - 🔼 Up moves: **{up_moves}**
+                - 🔽 Down moves: **{down_moves}**
+                - 📈 Longest uptrend: **{max_up + 1} steps**
+                - 📉 Longest downtrend: **{max_down + 1} steps**
+                - 🔁 Reversals detected: **{reversals}**
+                - 📊 Total points: **{len(prices)}**
+                """)
 
-            # ✅ Clean numeric values
-            cleaned_prices = []
-            for p in set(price_matches):
-                try:
-                    val = float(p.replace(",", ""))
-                    if val > 1000:  # looks like a BTC price or USD value
-                        cleaned_prices.append(val)
-                except ValueError:
-                    continue
-
-            price_matches = cleaned_prices  # keep original order!
-
-
-            # ✅ Analysis
-            up_moves = sum(1 for i in range(1, len(price_matches)) if price_matches[i] > price_matches[i-1])
-            down_moves = sum(1 for i in range(1, len(price_matches)) if price_matches[i] < price_matches[i-1])
-
-            st.success("✅ Text data extracted!")
-
-            st.write("🔢 **Detected Prices:**", price_matches[:10])
-
-            st.markdown(f"""
-            ### 🧠 Analysis Summary
-            - 🔼 Price moved **up** {up_moves} times  
-            - 🔽 Price moved **down** {down_moves} times  
-            - 🧮 Total points analyzed: {len(price_matches)}
-            """)
-
-            if len(price_matches) > 1:
-                st.line_chart(price_matches)
-
+                st.line_chart(prices)
         except Exception as e:
-            st.error(f"❌ Error processing image: {e}")
-    else:
-        st.info("📷 Please upload a chart image to begin analysis.")
+            st.error(f"Error processing input: {e}")
+
 
 
  
