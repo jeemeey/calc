@@ -312,8 +312,7 @@ with tabs[2]:
 
 
 with tabs[3]:
- 
-st.subheader("📈 chart analysis")
+   st.subheader("📈 chart analysis")
  
 # Load the chart image again after environment reset
  image_path = "/mnt/data/image.png"
