@@ -4,7 +4,8 @@ import pandas as pd
 from io import BytesIO
 import smtplib
 from email.message import EmailMessage
-
+import os
+import datetime
 
 # === Compound Growth ===
  def compound_growth(principal, rate, days, frequency, withdraw):
