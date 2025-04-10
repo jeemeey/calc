@@ -6,6 +6,9 @@ import smtplib
 from email.message import EmailMessage
 import os
 import datetime
+from PIL import Image
+import pytesseract
+import re
 
 # === Compound Growth ===
  def compound_growth(principal, rate, days, frequency, withdraw):
@@ -308,25 +311,26 @@ with tabs[2]:
 
 
 
-with tabs[2]:
-     st.subheader("📈 chart analysis")
+with tabs[3]:
+ 
+st.subheader("📈 chart analysis")
  
 # Load the chart image again after environment reset
-image_path = "/mnt/data/image.png"
-image = Image.open(image_path)
+ image_path = "/mnt/data/image.png"
+ image = Image.open(image_path)
 
 # OCR extract
-extracted_text = pytesseract.image_to_string(image)
+ extracted_text = pytesseract.image_to_string(image)
 
 # Simple pattern extraction
-price_matches = re.findall(r'\d{4,6}(?:\.\d+)?', extracted_text)
-volume_matches = re.findall(r'\d+(?:\.\d+)?[KMB]?', extracted_text)
+ price_matches = re.findall(r'\d{4,6}(?:\.\d+)?', extracted_text)
+ volume_matches = re.findall(r'\d+(?:\.\d+)?[KMB]?', extracted_text)
 
 # Unique + clean
-price_matches = list(set(price_matches))
-volume_matches = list(set(volume_matches))
+ price_matches = list(set(price_matches))
+ volume_matches = list(set(volume_matches))
 
-price_matches[:10], volume_matches[:10]
+ price_matches[:10], volume_matches[:10]
 
 # Footer
 st.markdown("---")
