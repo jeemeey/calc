@@ -134,7 +134,12 @@ def send_email(to, subject, body, attachment, filename):
 # === Streamlit App ===
 st.set_page_config(page_title="Smart Investment App", layout="centered")
 st.title("💹 Smart Compound + Recovery + Sharing")
-tabs = st.tabs(["📈 Compound Calculator", "💸 Withdrawal Simulator", "🤝 Shared Investment Plan"])
+tabs = st.tabs([
+    "📈 Compound Calculator",
+    "💸 Withdrawal Simulator",
+    "🤝 Shared Investment Plan",
+    "📊 Chart Analyzer"
+])
 
 # === Tab 1 ===
 with tabs[0]:
