@@ -1,5 +1,4 @@
 # Smart Compound + Recovery + Sharing
-import streamlit as st
 import pandas as pd
 from io import BytesIO
 import smtplib
