@@ -11,7 +11,7 @@ import pytesseract
 import re
 
 # === Compound Growth ===
- def compound_growth(principal, rate, days, frequency, withdraw):
+def compound_growth(principal, rate, days, frequency, withdraw):
     freq = {"Daily": 1, "Weekly": 7, "Monthly": 30}[frequency]
     data = []
     balance = principal
