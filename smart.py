@@ -315,7 +315,7 @@ with tabs[3]:
    st.subheader("📈 chart analysis")
  
 # Load the chart image again after environment reset
- image_path = "/mnt/data/image.png"
+ image_path = /mnt/data/image.png
  image = Image.open(image_path)
 
 # OCR extract
