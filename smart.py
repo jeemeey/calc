@@ -312,7 +312,6 @@ with tabs[2]:
 
  
 # Load the chart image again after environment reset
-         image_path = /mnt/data/image.png
          image = Image.open(image_path)
 
 # OCR extract
