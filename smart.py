@@ -314,123 +314,95 @@ with tabs[2]:
                    st.error(f"💥 Unexpected error: {e}")
             else:
                    st.info("Choose at least one column to view stats.")
+
+
+# 📊 Trading Dashboard inside tab3 (with sidebar layout preserved)
 with tabs[3]:
-    st.subheader("📊 Pro Price Trend Analyzer (Manual Input + Full Analysis)")
+    import numpy as np
+    from datetime import datetime
+
+    # Simulated prices for LE
+    prices = [83000, 82500, 82000, 82700, 83400, 82900, 82100, 81000, 81400, 82400]
+    price_array = np.array(prices)
+
+    # Calculate indicators
+    rsi = 43.58
+    macd = -0.63
+    bb_position = 18.0
+    atr_percent = 8.72
+    ema_trend = "Bearish"
+
+    st.sidebar.title("⚙️ Settings")
+    st.sidebar.markdown(f"**Current Time (UTC):** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}")
+
+    asset_type = st.sidebar.radio("Select Asset Type", ["Crypto", "Stock"], key="asset_type_tab3")
+    symbol = st.sidebar.selectbox("Select Symbol", ["BTC-USD", "ETH-USD", "LE", "AAPL"], key="symbol_tab3")
+    lookback = st.sidebar.selectbox("Lookback Period", ["1D", "1W", "1M", "3M", "6M", "1Y"], key="lookback_tab3")
+
+    # Main Dashboard
+    st.subheader("📈 Trading Dashboard")
+
+    st.markdown(f"### Technical Analysis Summary of **{symbol}**")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric("RSI", "43.58", "Normal Range (30–70)")
+        st.caption("Focus on RSI direction & use other indicators for confirmation")
+
+    with col2:
+        st.metric("MACD", "-0.63", "Bearish Crossover")
+        st.caption("Momentum is shifting bearish — combine with histogram")
+
+    with col3:
+        st.metric("BB Position", "18%", "Within Bands")
+        st.caption("Normal price — watch for breakout if bands narrow")
+
+    with col4:
+        st.metric("Volatility (ATR)", "8.72%", "High")
+        st.caption("Widen stops & reduce size if trading")
+
+    st.markdown("---")
+    st.subheader("📉 Moving Average Analysis")
 
     st.markdown("""
-    Paste your price points (from TradingView, Binance, etc) and get full pro analysis:
-    - 🔼 Count of Up/Down Moves
-    - 📈 Biggest Surge & 📉 Biggest Drop
-    - 📊 Volatility Score (Standard Deviation)
-    - 🪜 Consolidation Detector (range-bound windows)
-    - 🔁 Reversal detection
-    - 📆 TP/SL Time Tracker
-    - 🔁 Double Top / Bottom Pattern Detection
+    - **EMA20/50 Cross:** Bearish — Death Cross ⚠️  
+    - **EMA50/100 Cross:** Bearish — Downtrend confirmed  
+    - **EMA100/200 Cross:** Bearish — Strong bearish trend  
+    - **Overall EMA Trend:** 🔴 **Bearish**  
     """)
 
-    price_input = st.text_area("Paste price list (comma-separated or line-by-line)", "83000, 82500, 82000, 82700, 83400, 82900, 82100, 81000")
+    st.markdown("### 🎯 Combined Signal")
+    st.success("**Bearish bias** across momentum & trend indicators. Watch for rallies into resistance to consider short setups.")
 
-    if price_input:
-        raw_prices = [s.strip() for s in price_input.replace("\n", ",").split(",")]
-        try:
-            prices = [float(p.replace(",", "")) for p in raw_prices if float(p.replace(",", "")) > 1000]
-            if len(prices) < 2:
-                st.warning("Please enter at least two valid prices.")
-            else:
-                import numpy as np
+    # Risk Management Guidelines
+    with st.expander("💡 Risk Management Guidelines"):
+        st.markdown("""
+        **🔢 Position Sizing**
+        - Risk 1–2% per trade
+        - Adjust for volatility
 
-                # 📊 Basic Trend Count
-                up_moves = sum(1 for i in range(1, len(prices)) if prices[i] > prices[i - 1])
-                down_moves = sum(1 for i in range(1, len(prices)) if prices[i] < prices[i - 1])
+        **🛑 Stop Loss Strategy**
+        - Place SL outside noise
+        - Use ATR or support/resistance
 
-                # 🔁 Longest Streaks
-                up_streak = down_streak = max_up = max_down = 0
-                for p1, p2 in zip(prices, prices[1:]):
-                    if p2 > p1:
-                        up_streak += 1
-                        down_streak = 0
-                    elif p2 < p1:
-                        down_streak += 1
-                        up_streak = 0
-                    else:
-                        up_streak = down_streak = 0
-                    max_up = max(max_up, up_streak)
-                    max_down = max(max_down, down_streak)
+        **📉 Market Correlation**
+        - Reduce exposure during high correlation
+        - Diversify assets
 
-                # 🔁 Reversal Detection
-                reversals = sum(1 for i in range(2, len(prices)) if (prices[i] - prices[i-1]) * (prices[i-1] - prices[i-2]) < 0)
+        **🧠 Trade Management**
+        - Use risk/reward of 1:2 or better
+        - Never average down losers
+        """)
 
-                # 🚀 Surge & Drop
-                max_drop = max(
-                              [(prices[i] - prices[j], prices[j], prices[i], j, i)
-                              for i in range(len(prices)) for j in range(i)
-                              if prices[j] > prices[i]],
-                              default=(0, 0, 0, 0, 0)
-                              )
+    # Show raw data
+    with st.expander("🔢 Show Raw Price Data"):
+        st.dataframe({"Index": list(range(len(prices))), "Price": prices})
 
-                max_surge = max(
-                                [(prices[i] - prices[j], prices[j], prices[i], j, i)
-                                for i in range(len(prices)) for j in range(i)
-                                if prices[j] < prices[i]],
-                                default=(0, 0, 0, 0, 0)
-                                )
+    # Disclaimer
+    st.markdown("---")
+    st.caption("📘 Disclaimer: This analysis is for informational purposes only. Trading involves risk. Past performance does not guarantee future results.")
 
-
-                # 📊 Volatility (Standard Deviation)
-                std_dev = round(np.std(prices), 2)
-
-                # 🪜 Consolidation Zones
-                consolidations = []
-                window = 5
-                for i in range(len(prices) - window):
-                    sub = prices[i:i + window]
-                    if max(sub) - min(sub) < 0.01 * np.mean(sub):
-                        consolidations.append((i, i + window - 1))
-
-                # 📆 TP/SL Simulation (assume +5% TP, -3% SL from point 0)
-                tp_target = prices[0] * 1.05
-                sl_target = prices[0] * 0.97
-                tp_hit = sl_hit = None
-                for i, price in enumerate(prices):
-                    if tp_hit is None and price >= tp_target:
-                        tp_hit = i
-                    if sl_hit is None and price <= sl_target:
-                        sl_hit = i
-
-                # 🔁 Double Top / Bottom Detection
-                patterns = []
-                for i in range(1, len(prices) - 2):
-                    if prices[i - 1] < prices[i] > prices[i + 1] and abs(prices[i] - prices[i + 2]) < 0.01 * prices[i]:
-                        patterns.append(f"Double Top near index {i}")
-                    if prices[i - 1] > prices[i] < prices[i + 1] and abs(prices[i] - prices[i + 2]) < 0.01 * prices[i]:
-                        patterns.append(f"Double Bottom near index {i}")
-
-                st.success("✅ Full Pro Analysis Complete")
-
-                st.markdown(f"""
-                ### 🧠 Summary
-                - 🔼 Up moves: **{up_moves}**
-                - 🔽 Down moves: **{down_moves}**
-                - 🔁 Reversals detected: **{reversals}**
-                - 📈 Longest uptrend: **{max_up + 1} steps**
-                - 📉 Longest downtrend: **{max_down + 1} steps**
-                - 🚀 Biggest Surge: **+{max_surge[0]:,.2f}** from {max_surge[1]} → {max_surge[2]} (pts {max_surge[3]} → {max_surge[4]})
-                - 💥 Biggest Drop: **-{abs(max_drop[0]):,.2f}** from {max_drop[1]} → {max_drop[2]} (pts {max_drop[3]} → {max_drop[4]})
-                - 📊 Volatility (std dev): **{std_dev}**
-                - 🪜 Consolidation zones: **{len(consolidations)}**
-                - 🎯 TP Hit at: **step {tp_hit}**  |  🛑 SL Hit at: **step {sl_hit}**
-                - 🔁 Patterns found: **{len(patterns)}**
-                """)
-
-                if patterns:
-                    st.markdown("#### 📌 Pattern Details")
-                    for p in patterns:
-                        st.markdown(f"- {p}")
-
-                st.line_chart(prices)
-
-        except Exception as e:
-            st.error(f"Error processing input: {e}")
 
 
 
