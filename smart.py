@@ -311,7 +311,8 @@ with tabs[2]:
             else:
                    st.info("Choose at least one column to view stats.")
 
-   with tabs[2]:
+   with tabs[3]:
+       
      st.subheader("📈 chart analysis") 
      image_path = "/mnt/data/image.png"
      image = Image.open(image_path)
