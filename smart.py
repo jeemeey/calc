@@ -8,6 +8,9 @@ import os
 import datetime
 from PIL import Image
 import re
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+
 
 # === Compound Growth ===
 def compound_growth(principal, rate, days, frequency, withdraw):
@@ -307,6 +310,17 @@ with tabs[2]:
                    st.error(f"💥 Unexpected error: {e}")
             else:
                    st.info("Choose at least one column to view stats.")
+
+   with tabs[2]:
+     st.subheader("📈 chart analysis") 
+     image_path = "/mnt/data/image.png"
+     image = Image.open(image_path)
+     extracted_text = pytesseract.image_to_string(image)
+     price_matches = re.findall(r'\d{4,6}(?:\.\d+)?', extracted_text)
+     volume_matches = re.findall(r'\d+(?:\.\d+)?[KMB]?', extracted_text)
+     price_matches = list(set(price_matches))
+     volume_matches = list(set(volume_matches))
+     price_matches[:10], volume_matches[:10]
 
 
  
