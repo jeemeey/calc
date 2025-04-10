@@ -6,9 +6,6 @@ import smtplib
 from email.message import EmailMessage
 import os
 import datetime
-from PIL import Image
-import pytesseract
-import re
 
 # === Compound Growth ===
 def compound_growth(principal, rate, days, frequency, withdraw):
