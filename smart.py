@@ -311,21 +311,6 @@ with tabs[2]:
 
 
  
-# Load the chart image again after environment reset
-         image = Image.open(image_path)
-
-# OCR extract
-          extracted_text = pytesseract.image_to_string(image)
-
-# Simple pattern extraction
-          price_matches = re.findall(r'\d{4,6}(?:\.\d+)?', extracted_text)
-         volume_matches = re.findall(r'\d+(?:\.\d+)?[KMB]?', extracted_text)
-
-# Unique + clean
-           price_matches = list(set(price_matches))
-           volume_matches = list(set(volume_matches))
-
-           price_matches[:10], volume_matches[:10]
 
 # Footer
 st.markdown("---")
