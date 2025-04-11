@@ -260,7 +260,9 @@ with tabs[2]:
             goal = invest
             day = 1
 
-            while recovered < goal:
+            max_days = 1000  # prevent crash by capping loop
+            while recovered < goal and day <= max_days:
+
                 rate = next((s['rate'] for s in schedule if s['from'] <= day <= s['to']), schedule[-1]['rate'])
                 profit = balance * (rate / 100)
                 recovery_part = profit * split_ratio
@@ -286,7 +288,10 @@ with tabs[2]:
                 day += 1
 
             df = pd.DataFrame(rows)
-            st.success(f"✅ Full Recovery Achieved in {day - 1} days")
+            if df.empty:
+             st.error("⚠️ Recovery failed: no data generated. Try increasing rate or adjusting split.")
+            else:
+             st.success(f"✅ Full Recovery Achieved in {day - 1} days")
 
             share_cols = [f"{name} Share" for name in names]
             st.line_chart(df.set_index("Day")[["Recovered"] + share_cols])
@@ -294,7 +299,7 @@ with tabs[2]:
 
             # Manual day range inputs
             st.markdown("### 🎯 Analyze by Manual Day Range")
-            max_day = int(df["Day"].max())
+            max_day = int(df["Day"].max()) if not df.empty else 1
             start_day = st.number_input("Start Day", min_value=1, max_value=max_day, value=1, key="start_day_input")
             end_day = st.number_input("End Day", min_value=start_day, max_value=max_day, value=max_day, key="end_day_input")
 
@@ -330,7 +335,7 @@ with tabs[3]:
 
  st.sidebar.header("📊 Market Settings")
  # Sidebar logic
- asset_type = st.selectbox("Select Asset Type", ["Crypto", "Stock"])
+ asset_type = st.sidebar.selectbox("Select Asset Type", ["Crypto", "Stock"])
 
  if asset_type == "Crypto":
            default_symbols = ["BTC-USD", "ETH-USD", "SOL-USD"]
