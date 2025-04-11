@@ -330,10 +330,10 @@ with tabs[3]:
 
  st.sidebar.header("📊 Market Settings")
  # Sidebar logic
- asset_type = st.selectbox("Select Asset Type", ["Crypto", "Stock"])
+ asset_type = st.sidebar.selectbox("Select Asset Type", ["Crypto", "Stock"])
 
  if asset_type == "Crypto":
-    default_symbols = ["BTC-USD", "ETH-USD", "SOL-USD"]
+           default_symbols = ["BTC-USD", "ETH-USD", "SOL-USD"]
  else:
     default_symbols = ["AAPL", "TSLA", "LE"]
 
@@ -347,7 +347,10 @@ with tabs[3]:
  st.write(f"📥 Fetching data for: {active_symbol}")
  st.dataframe(data.tail())  # Show the last few rows
 
- 
+ try:
+    data = yf.download(active_symbol, period="6mo", interval="1d")
+ except Exception as e:
+    st.error(f"Failed to load data for {active_symbol}: {e}")
 
 
  lookback = st.sidebar.selectbox("Lookback Period", ["7d", "1mo", "3mo", "6mo", "1y"], index=3)
