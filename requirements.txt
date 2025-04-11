@@ -1,9 +1,8 @@
-streamlit as st
-pandas as pd
+streamlit
+pandas
 io 
 BytesIO
-smtplib
-email.message 
+smtplib 
 EmailMessage
 os
 datetime
@@ -11,7 +10,7 @@ PIL
 Image
 re
 pytesseract
-numpy as np
-plotly.graph_objects as go
-plotly.express as px
-yfinance as yf
+numpy
+plotly.graph_objects
+plotly.express
+yfinance
