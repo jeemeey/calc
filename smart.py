@@ -347,10 +347,7 @@ with tabs[3]:
  st.write(f"📥 Fetching data for: {active_symbol}")
  st.dataframe(data.tail())  # Show the last few rows
 
- try:
-    data = yf.download(active_symbol, period="6mo", interval="1d")
- except Exception as e:
-    st.error(f"Failed to load data for {active_symbol}: {e}")
+ 
 
 
  lookback = st.sidebar.selectbox("Lookback Period", ["7d", "1mo", "3mo", "6mo", "1y"], index=3)
