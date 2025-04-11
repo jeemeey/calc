@@ -10,7 +10,6 @@ from PIL import Image
 import re
 import numpy as np
 from datetime import datetime
-import plotly.graph_objects as go
 import plotly.express as px
 import yfinance as yf
 
