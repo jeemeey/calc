@@ -329,8 +329,30 @@ with tabs[3]:
  st.title("📈 Jemey Live Market Dashboard")
 
  st.sidebar.header("📊 Market Settings")
- asset_type = st.sidebar.radio("Select Asset Type", ["Crypto", "Stock"])
- symbol = st.sidebar.selectbox("Choose Symbol", ["BTC-USD", "ETH-USD", "AAPL", "MSFT", "TSLA"])
+ # Sidebar logic
+ asset_type = st.selectbox("Select Asset Type", ["Crypto", "Stock"])
+
+ if asset_type == "Crypto":
+    default_symbols = ["BTC-USD", "ETH-USD", "SOL-USD"]
+ else:
+    default_symbols = ["AAPL", "TSLA", "LE"]
+
+ symbol = st.selectbox("Select Symbol", default_symbols)
+ custom_symbol = st.text_input("Or enter custom symbol", "")
+ active_symbol = custom_symbol if custom_symbol else symbol
+
+ # ⬇️ Place this line RIGHT HERE:
+ data = yf.download(active_symbol, period="6mo", interval="1d")
+ 
+ st.write(f"📥 Fetching data for: {active_symbol}")
+ st.dataframe(data.tail())  # Show the last few rows
+
+ try:
+    data = yf.download(active_symbol, period="6mo", interval="1d")
+ except Exception as e:
+    st.error(f"Failed to load data for {active_symbol}: {e}")
+
+
  lookback = st.sidebar.selectbox("Lookback Period", ["7d", "1mo", "3mo", "6mo", "1y"], index=3)
 
  @st.cache_data
