@@ -1,0 +1,17 @@
+streamlit as st
+pandas as pd
+io 
+BytesIO
+smtplib
+email.message 
+EmailMessage
+os
+datetime
+PIL
+Image
+re
+pytesseract
+numpy as np
+plotly.graph_objects as go
+plotly.express as px
+yfinance as yf
