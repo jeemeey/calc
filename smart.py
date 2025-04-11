@@ -11,7 +11,7 @@ def compound_growth(principal, rate, days, frequency, withdraw):
             if withdraw:
                 withdrawn += profit
             else:
-                 balance += profit
+                balance += profit
         else:
             profit = 0
 
