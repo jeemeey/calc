@@ -1,18 +1,3 @@
-# Smart Compound + Recovery + Sharing
-import streamlit as st
-import pandas as pd
-from io import BytesIO
-import smtplib
-from email.message import EmailMessage
-import os
-import datetime
-from PIL import Image
-import re
-import numpy as np
-from datetime import datetime
-import yfinance as yf
-
-
 # === Compound Growth ===
 def compound_growth(principal, rate, days, frequency, withdraw):
     freq = {"Daily": 1, "Weekly": 7, "Monthly": 30}[frequency]
