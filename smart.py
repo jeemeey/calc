@@ -330,7 +330,7 @@ with tabs[3]:
 
  st.sidebar.header("📊 Market Settings")
  # Sidebar logic
- asset_type = st.sidebar.selectbox("Select Asset Type", ["Crypto", "Stock"])
+ asset_type = st.selectbox("Select Asset Type", ["Crypto", "Stock"])
 
  if asset_type == "Crypto":
            default_symbols = ["BTC-USD", "ETH-USD", "SOL-USD"]
