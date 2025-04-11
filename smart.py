@@ -8,7 +8,6 @@ import os
 import datetime
 from PIL import Image
 import re
-import pytesseract
 import numpy as np
 from datetime import datetime
 import plotly.graph_objects as go
