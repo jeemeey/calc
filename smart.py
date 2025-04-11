@@ -10,7 +10,7 @@ def compound_growth(principal, rate, days, frequency, withdraw):
             profit = balance * (rate / 100)
             if withdraw:
                 withdrawn += profit
-            else:
+             else:
                 balance += profit
         else:
             profit = 0
