@@ -488,7 +488,7 @@ with tabs[4]:
 
 
  st.markdown("---")
- st.markdown("<center>Built with ❤️ by Ahmed & Jemey — Powered by Live Market Data</center>", unsafe_allow_html=True)
+ st.markdown("<center>Built with ❤️ by Ahmed & Jemey — Powered by JEMEY AI Live Market Data</center>", unsafe_allow_html=True)
 
 
 
