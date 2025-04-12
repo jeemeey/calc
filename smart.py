@@ -142,6 +142,7 @@ tabs = st.tabs([
     "📈 Compound Calculator",
     "💸 Withdrawal Simulator",
     "🤝 Shared Investment Plan",
+    "Range Summary Analysis",
     "📊 Jemey Real-Time Dashboard"
 ])
 
@@ -196,6 +197,7 @@ with tabs[0]:
                 st.error(f"❌ Email failed: {e}")
 
 # === Tab 2 ===
+
 with tabs[1]:
     st.subheader("💸 Daily Withdrawal Simulator")
     col1, col2 = st.columns(2)
@@ -214,6 +216,7 @@ with tabs[1]:
         st.line_chart(w_df.set_index("Day")[["Balance", "Withdrawn"]])
         st.dataframe(w_df)
 
+
 # === Tab 3 ===
 
 with tabs[2]:
@@ -227,7 +230,6 @@ with tabs[2]:
         split_ratio = st.number_input("Recovery Split Ratio", min_value=0.0, max_value=1.0, value=0.5, step=0.05)
         people_count = st.number_input("Number of People Sharing Profit", min_value=1, value=2, step=1)
 
-    # Parse schedule
     schedule = []
     for s in schedule_str.split(","):
         if ":" in s:
@@ -235,9 +237,7 @@ with tabs[2]:
             start, end = map(int, range_part.split("-"))
             schedule.append({"from": start, "to": end, "rate": float(rate)})
 
-    # Custom names and ratios
-    names = []
-    ratios = []
+    names, ratios = [], []
     st.markdown("### 🔧 Custom Profit Split Ratio")
     for i in range(1, people_count + 1):
         col1, col2 = st.columns([2, 1])
@@ -259,10 +259,9 @@ with tabs[2]:
             recovered = 0
             goal = invest
             day = 1
+            max_days = 1000
 
-            max_days = 1000  # prevent crash by capping loop
             while recovered < goal and day <= max_days:
-
                 rate = next((s['rate'] for s in schedule if s['from'] <= day <= s['to']), schedule[-1]['rate'])
                 profit = balance * (rate / 100)
                 recovery_part = profit * split_ratio
@@ -288,48 +287,68 @@ with tabs[2]:
                 day += 1
 
             df = pd.DataFrame(rows)
-            if df.empty:
-             st.error("⚠️ Recovery failed: no data generated. Try increasing rate or adjusting split.")
-            else:
-             st.success(f"✅ Full Recovery Achieved in {day - 1} days")
-
             share_cols = [f"{name} Share" for name in names]
-            st.line_chart(df.set_index("Day")[["Recovered"] + share_cols])
-            st.dataframe(df)
 
-            # Manual day range inputs
-            st.markdown("### 🎯 Analyze by Manual Day Range")
-            max_day = int(df["Day"].max()) if not df.empty else 1
-            start_day = st.number_input("Start Day", min_value=1, max_value=max_day, value=1, key="start_day_input")
-            end_day = st.number_input("End Day", min_value=start_day, max_value=max_day, value=max_day, key="end_day_input")
+            st.session_state["df"] = df
+            st.session_state["share_cols"] = share_cols
 
-            range_df = df[(df["Day"] >= start_day) & (df["Day"] <= end_day)]
-            selected_cols = st.multiselect("Choose People to Analyze", share_cols, default=share_cols, key="manual_range_cols")
-
-            if selected_cols:
-             try:
-                 selected_range = range_df[selected_cols]
-
-                 if selected_range.empty:
-                  st.warning("⚠️ No data in selected range.")
-                 else:
-                   st.write("📊 Totals:", selected_range.sum().round(2))
-                   st.write("📈 Averages:", selected_range.mean().round(2))
-                   st.write("🔺 Max:", selected_range.max().round(2))
-                   st.write("🔻 Min:", selected_range.min().round(2))
-                   st.line_chart(selected_range)
-             except KeyError as e:
-                   st.error(f"🚫 Invalid column selection: {e}")
-             except Exception as e:
-                   st.error(f"💥 Unexpected error: {e}")
+            if df.empty:
+                st.error("⚠️ Recovery failed: no data generated.")
             else:
-                   st.info("Choose at least one column to view stats.")
+                st.success(f"✅ Full Recovery Achieved in {day - 1} days")
+                st.line_chart(df.set_index("Day")[["Recovered"] + share_cols])
+                st.dataframe(df)
 
-
+              
 # === Tab 4 ===
 
-# 📊 Trading Dashboard inside tab3 (with sidebar layout preserved)
 with tabs[3]:
+    st.subheader("📊 Range Summary Analysis")
+
+    if "df" in st.session_state and not st.session_state["df"].empty:
+        df = st.session_state["df"]
+        share_cols = st.session_state["share_cols"]
+
+        max_day = int(df["Day"].max())
+        from_day = st.number_input("Start Day", min_value=1, max_value=max_day, value=1, key="range_from_day")
+        to_day = st.number_input("End Day", min_value=from_day, max_value=max_day, value=from_day + 5, key="range_to_day")
+
+        selected_cols = st.multiselect("Choose People to Analyze", share_cols, default=share_cols, key="range_cols")
+
+        if st.button("✅ Analyze Range Summary"):
+            try:
+                range_df = df[(df["Day"] >= from_day) & (df["Day"] <= to_day)]
+
+                if range_df.empty:
+                    st.warning("⚠️ No data in selected range.")
+                elif not selected_cols:
+                    st.warning("⚠️ Please select people to analyze.")
+                else:
+                    selected_range = range_df[selected_cols]
+                    st.subheader("📊 Totals")
+                    st.dataframe(selected_range.sum().round(2).to_frame().T)
+
+                    st.subheader("📈 Averages")
+                    st.dataframe(selected_range.mean().round(2).to_frame().T)
+
+                    st.subheader("🔺 Max")
+                    st.dataframe(selected_range.max().round(2).to_frame().T)
+
+                    st.subheader("🔻 Min")
+                    st.dataframe(selected_range.min().round(2).to_frame().T)
+
+                    st.line_chart(selected_range)
+
+            except Exception as e:
+                st.error(f"💥 Error during analysis: {e}")
+    else:
+        st.info("ℹ️ Run the sharing strategy in Tab 3 first to generate data.")
+
+
+# === Tab 5 ===
+
+# 📊 Trading Dashboard inside tab3 (with sidebar layout preserved)
+with tabs[4]:
    
  st.title("📈 Jemey Live Market Dashboard")
 
