@@ -1,5 +1,6 @@
 # Smart Compound + Recovery + Sharing
 import streamlit as st
+from PIL import Image
 import pandas as pd
 from io import BytesIO
 import smtplib
@@ -14,6 +15,8 @@ from datetime import datetime
 import plotly.graph_objects as go
 import plotly.express as px
 import yfinance as yf
+import base64
+
 
 
 # === Compound Growth ===
@@ -145,6 +148,74 @@ tabs = st.tabs([
     "Range Summary Analysis",
     "📊 Jemey Real-Time Dashboard"
 ])
+
+
+# === CONFIG ===
+FULL_JEMEY_PASSWORD = "ahmedelite"  # Set your unlock password
+LOGO_PATH = "C:/Users/ahmed/Downloads/jemeyai/jemey.png"  # Your logo path
+MODE_FILE = "jemey_mode.txt"  # For saving mode across sessions
+
+# === Load saved mode if exists ===
+if "jemey_mode" not in st.session_state:
+    if os.path.exists(MODE_FILE):
+        with open(MODE_FILE, "r") as f:
+            st.session_state.jemey_mode = f.read().strip()
+    else:
+        st.session_state.jemey_mode = "Normal"
+
+# === Convert image to base64 ===
+def get_base64_image(path):
+    with open(path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+# === Render Jemey Sidebar Logo & Title ===
+def render_logo_sidebar():
+    img_data = get_base64_image(LOGO_PATH)
+    mode = st.session_state.get("jemey_mode", "Normal")
+
+    if mode == "Full":
+        jemey_title = "💠 JEMEY Engine"
+        jemey_color = "#00f0ff"
+    else:
+        jemey_title = "🤖 JEMEY Normal"
+        jemey_color = "#888888"
+
+    st.sidebar.markdown(
+        f"""
+        <div style="text-align: center;">
+            <img src="data:image/png;base64,{img_data}" width="150" style="margin-bottom: 10px;">
+            <h3 style="color:{jemey_color}; margin-top: 5px;">{jemey_title}</h3>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# === Unlock logic ===
+if st.session_state.jemey_mode != "Full":
+    st.sidebar.markdown("### 🔐 Jemey Access")
+    auth_input = st.sidebar.text_input("Enter Unlock Key", type="password")
+    if st.sidebar.button("🔓 Unlock Full Jemey"):
+        if auth_input == FULL_JEMEY_PASSWORD:
+            st.session_state.jemey_mode = "Full"
+            with open(MODE_FILE, "w") as f:
+                f.write("Full")
+            st.sidebar.success("✅ Jemey Engine Activated")
+            st.experimental_rerun()
+        else:
+            st.sidebar.error("❌ Wrong password. Try again.")
+else:
+    # Show "Lock" button if already in Full mode
+    if st.sidebar.button("🔒 Lock Jemey (Back to Normal)"):
+        st.session_state.jemey_mode = "Normal"
+        with open(MODE_FILE, "w") as f:
+            f.write("Normal")
+        st.sidebar.info("🔐 Jemey is now in Normal Mode")
+        st.experimental_rerun()
+
+# === Show logo after logic ===
+render_logo_sidebar()
+
+
 
 # === Tab 1 ===
 with tabs[0]:
@@ -348,147 +419,155 @@ with tabs[3]:
 # === Tab 5 ===
 
 # 📊 Trading Dashboard inside tab3 (with sidebar layout preserved)
+
 with tabs[4]:
-   
- st.title("📈 Jemey Live Market Dashboard")
+    st.title("📈 Jemey Live Market Dashboard")
 
- st.sidebar.header("📊 Market Settings")
- # Sidebar logic
- asset_type = st.sidebar.selectbox("Select Asset Type", ["Crypto", "Stock"])
+    st.header("📊 Market Settings")
+    asset_type = st.selectbox("Select Asset Type", ["Crypto", "Stock"])
 
- if asset_type == "Crypto":
-           default_symbols = ["BTC-USD", "ETH-USD", "SOL-USD"]
- else:
-    default_symbols = ["AAPL", "TSLA", "LE"]
+    default_symbols = ["BTC-USD", "ETH-USD", "SOL-USD"] if asset_type == "Crypto" else ["AAPL", "TSLA", "LE"]
+    symbol = st.selectbox("Select Symbol", default_symbols)
+    custom_symbol = st.text_input("Or enter custom symbol", "")
+    active_symbol = custom_symbol if custom_symbol else symbol
 
- symbol = st.selectbox("Select Symbol", default_symbols)
- custom_symbol = st.text_input("Or enter custom symbol", "")
- active_symbol = custom_symbol if custom_symbol else symbol
+    lookback = st.selectbox("Lookback Period", ["7d", "1mo", "3mo", "6mo", "1y"], index=3)
 
- # ⬇️ Place this line RIGHT HERE:
- data = yf.download(active_symbol, period="6mo", interval="1d")
- 
- st.write(f"📥 Fetching data for: {active_symbol}")
- st.dataframe(data.tail())  # Show the last few rows
+    @st.cache_data
+    def fetch_market_data(symbol: str, period: str = "6mo", interval: str = "1d"):
+        df = yf.download(tickers=symbol, period=period, interval=interval)
+        df.reset_index(inplace=True)
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = [' '.join(col).strip() for col in df.columns.values]
+        rename_map = {col: col.replace(f" {symbol}", "") for col in df.columns if f" {symbol}" in col}
+        df.rename(columns=rename_map, inplace=True)
+        return df
 
- try:
-    data = yf.download(active_symbol, period="6mo", interval="1d")
- except Exception as e:
-    st.error(f"Failed to load data for {active_symbol}: {e}")
+    try:
+        df = fetch_market_data(active_symbol, period=lookback)
 
+        required_columns = ['Date', 'Open', 'High', 'Low', 'Close']
+        if not all(col in df.columns for col in required_columns):
+            df.rename(columns={
+                'Datetime': 'Date',
+                'Open': 'Open',
+                'High': 'High',
+                'Low': 'Low',
+                'Close': 'Close',
+            }, inplace=True)
 
- lookback = st.sidebar.selectbox("Lookback Period", ["7d", "1mo", "3mo", "6mo", "1y"], index=3)
+        if not all(col in df.columns for col in required_columns):
+            raise ValueError("Missing required columns in market data.")
 
- @st.cache_data
- def fetch_market_data(symbol: str, period: str = "6mo", interval: str = "1d"):
-    df = yf.download(tickers=symbol, period=period, interval=interval)
-    df.reset_index(inplace=True)
+        df['EMA20'] = df['Close'].ewm(span=20, adjust=False).mean()
+        df['EMA50'] = df['Close'].ewm(span=50, adjust=False).mean()
+        df['EMA100'] = df['Close'].ewm(span=100, adjust=False).mean()
+        df['EMA200'] = df['Close'].ewm(span=200, adjust=False).mean()
+        df['RSI'] = 100 - (100 / (1 + df['Close'].pct_change().rolling(window=14).mean()))
+        df['ATR'] = (df['High'] - df['Low']).rolling(window=14).mean()
+        df['MACD'] = df['Close'].ewm(span=12, adjust=False).mean() - df['Close'].ewm(span=26, adjust=False).mean()
+        df['Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
+        df['MACD_Hist'] = df['MACD'] - df['Signal']
 
-    # Flatten column names if needed (only if multi-index)
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [' '.join(col).strip() for col in df.columns.values]
+        # 📌 Technical Analysis Summary Panel
+        st.subheader("📌 Technical Analysis Summary")
+        col1, col2, col3, col4 = st.columns(4)
 
-    # Rename columns if they have ticker prefix
-    rename_map = {}
-    for col in df.columns:
-        if f" {symbol}" in col:
-            rename_map[col] = col.replace(f" {symbol}", "")
-    df.rename(columns=rename_map, inplace=True)
+        rsi = df['RSI'].iloc[-1]
+        macd = df['MACD'].iloc[-1]
+        signal = df['Signal'].iloc[-1]
+        atr = df['ATR'].iloc[-1]
+        close = df['Close'].iloc[-1]
+        bb_pos = (close - df['Low'].min()) / (df['High'].max() - df['Low'].min()) * 100
+        atr_pct = (atr / close) * 100
 
-    return df
+        col1.metric("RSI", f"{rsi:.2f}")
+        col2.metric("MACD", f"{macd:.2f}")
+        col3.metric("BB Position", f"{bb_pos:.1f}%")
+        col4.metric("Volatility (ATR)", f"{atr_pct:.2f}%")
 
- try:
-     df = fetch_market_data(symbol, period=lookback)
+        # 📌 Moving Average Analysis
+        st.subheader("📌 Moving Average Analysis")
+        ema_crosses = []
 
-     # Check required columns
-     required_columns = ['Date', 'Open', 'High', 'Low', 'Close']
-     if not all(col in df.columns for col in required_columns):
-      st.warning("Trying alternative fallback column structure...")
-     df.rename(columns={
-            'Datetime': 'Date',
-            'Open': 'Open',
-            'High': 'High',
-            'Low': 'Low',
-            'Close': 'Close',
-        }, inplace=True)
+        def detect_cross(short, long):
+            s = df[short]
+            l = df[long]
+            if s.iloc[-1] > l.iloc[-1] and s.iloc[-2] <= l.iloc[-2]:
+                return f"Golden Cross ({short} ↑ {long})"
+            elif s.iloc[-1] < l.iloc[-1] and s.iloc[-2] >= l.iloc[-2]:
+                return f"Death Cross ({short} ↓ {long})"
+            return f"No Cross ({short} vs {long})"
 
-     # Validate again
-     if not all(col in df.columns for col in required_columns):
-      raise ValueError("One or more required columns are missing in the data.")
+        ema_crosses.append(("EMA20", "EMA50", detect_cross("EMA20", "EMA50")))
+        ema_crosses.append(("EMA50", "EMA100", detect_cross("EMA50", "EMA100")))
+        ema_crosses.append(("EMA100", "EMA200", detect_cross("EMA100", "EMA200")))
 
-     df['EMA20'] = df['Close'].ewm(span=20, adjust=False).mean()
-     df['EMA50'] = df['Close'].ewm(span=50, adjust=False).mean()
-     df['EMA100'] = df['Close'].ewm(span=100, adjust=False).mean()
-     df['EMA200'] = df['Close'].ewm(span=200, adjust=False).mean()
-     df['RSI'] = 100 - (100 / (1 + df['Close'].pct_change().rolling(window=14).mean()))
-     df['ATR'] = (df['High'] - df['Low']).rolling(window=14).mean()
-     df['MACD'] = df['Close'].ewm(span=12, adjust=False).mean() - df['Close'].ewm(span=26, adjust=False).mean()
-     df['Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
-     df['MACD_Hist'] = df['MACD'] - df['Signal']
+        for short, long, cross in ema_crosses:
+            st.markdown(f"**{short} vs {long}:** {cross}")
 
-     st.subheader(f"📊 Chart for {symbol} ({lookback})")
+        # 📊 Price + EMA Chart
+        st.subheader(f"📈 Price Chart + EMA for {active_symbol}")
+        fig = go.Figure()
+        fig.add_trace(go.Candlestick(
+            x=df['Date'],
+            open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'],
+            name='Candles'))
+        for ema in ['EMA20', 'EMA50', 'EMA100', 'EMA200']:
+            fig.add_trace(go.Scatter(x=df['Date'], y=df[ema], mode='lines', name=ema))
+        fig.update_layout(xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
+        st.plotly_chart(fig, use_container_width=True)
 
-     fig = go.Figure()
-     fig.add_trace(go.Candlestick(
-       x=df['Date'],
-       open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'],
-       name='Candles'))
-     for ema in ['EMA20', 'EMA50', 'EMA100', 'EMA200']:
-      fig.add_trace(go.Scatter(x=df['Date'], y=df[ema], mode='lines', name=ema))
+        # 📉 RSI
+        st.subheader("📉 RSI")
+        fig_rsi = px.line(df, x='Date', y='RSI', title='RSI')
+        fig_rsi.add_hline(y=70, line_dash="dot", line_color="red")
+        fig_rsi.add_hline(y=30, line_dash="dot", line_color="green")
+        st.plotly_chart(fig_rsi, use_container_width=True)
 
-     fig.update_layout(title='Price Chart + EMA', xaxis_title='Date', yaxis_title='Price', xaxis_rangeslider_visible=False)
-     st.plotly_chart(fig, use_container_width=True)
+        # 📈 MACD
+        st.subheader("📈 MACD")
+        fig_macd = go.Figure()
+        fig_macd.add_trace(go.Scatter(x=df['Date'], y=df['MACD'], mode='lines', name='MACD'))
+        fig_macd.add_trace(go.Scatter(x=df['Date'], y=df['Signal'], mode='lines', name='Signal Line'))
+        fig_macd.add_trace(go.Bar(x=df['Date'], y=df['MACD_Hist'], name='Histogram'))
+        st.plotly_chart(fig_macd, use_container_width=True)
 
-     st.markdown("---")
-     st.subheader("📉 RSI")
-     fig_rsi = px.line(df, x='Date', y='RSI', title='RSI')
-     fig_rsi.add_hline(y=70, line_dash="dot", line_color="red")
-     fig_rsi.add_hline(y=30, line_dash="dot", line_color="green")
-     st.plotly_chart(fig_rsi, use_container_width=True)
+        # 📊 ATR
+        st.subheader("📊 ATR - Volatility")
+        fig_atr = px.line(df, x='Date', y='ATR', title='ATR')
+        st.plotly_chart(fig_atr, use_container_width=True)
 
-     st.subheader("📈 MACD")
-     fig_macd = go.Figure()
-     fig_macd.add_trace(go.Scatter(x=df['Date'], y=df['MACD'], mode='lines', name='MACD'))
-     fig_macd.add_trace(go.Scatter(x=df['Date'], y=df['Signal'], mode='lines', name='Signal Line'))
-     fig_macd.add_trace(go.Bar(x=df['Date'], y=df['MACD_Hist'], name='Histogram'))
-     st.plotly_chart(fig_macd, use_container_width=True)
+        # 💡 Risk Guidelines
+        with st.expander("💡 Risk Management Guidelines"):
+            st.markdown(""""
+         **🔢 Position Sizing**
+         - Risk 1–2% per trade
+         - Adjust for volatility
 
-     st.subheader("📊 ATR - Volatility")
-     fig_atr = px.line(df, x='Date', y='ATR', title='ATR')
-     st.plotly_chart(fig_atr, use_container_width=True)
+            **🛑 Stop Loss Strategy**
+            - Place SL outside noise
+            - Use ATR or support/resistance
 
-     with st.expander("💡 Risk Management Guidelines"):
-         st.markdown("""
-        **🔢 Position Sizing**
-        - Risk 1–2% per trade
-        - Adjust for volatility
+            **📉 Market Correlation**
+            - Reduce exposure during high correlation
+            - Diversify assets
 
-        **🛑 Stop Loss Strategy**
-        - Place SL outside noise
-        - Use ATR or support/resistance
+            **🧠 Trade Management**
+            - Use risk/reward of 1:2 or better
+            - Never average down losers
+            """)
 
-        **📉 Market Correlation**
-        - Reduce exposure during high correlation
-        - Diversify assets
+        st.subheader("📂 Raw Market Data")
+        st.dataframe(df)
 
-        **🧠 Trade Management**
-        - Use risk/reward of 1:2 or better
-        - Never average down losers
-        """)
+        st.caption("📘 Disclaimer: This analysis is for informational purposes only. Trading involves risk. Past performance does not guarantee future results.")
 
-     st.markdown("---")
-     st.subheader("📂 Raw Market Data")
-     st.dataframe(df)
+    except Exception as e:
+        st.error(f"⚠️ Failed to fetch market data: {e}")
 
-     st.markdown("---")
-     st.caption("📘 Disclaimer: This analysis is for informational purposes only. Trading involves risk. Past performance does not guarantee future results.")
-
- except Exception as e:
-     st.error(f"⚠️ Failed to fetch market data: {e}")
-
-
- st.markdown("---")
- st.markdown("<center>Built with ❤️ by Ahmed & Jemey — Powered by JEMEY AI Live Market Data</center>", unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("<center>Built with ❤️ by Ahmed & Jemey — Powered by JEMEY AI Live Market Data</center>", unsafe_allow_html=True)
 
 
 
