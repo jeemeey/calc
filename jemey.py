@@ -152,7 +152,7 @@ tabs = st.tabs([
 
 # === CONFIG ===
 FULL_JEMEY_PASSWORD = "ahmedelite"  # Set your unlock password
-LOGO_PATH = "C:/Users/ahmed/Downloads/jemeyai/jemey.png"  # Your logo path
+LOGO_PATH = "jemey.png"  # Your logo path
 MODE_FILE = "jemey_mode.txt"  # For saving mode across sessions
 
 # === Load saved mode if exists ===
