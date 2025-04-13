@@ -164,8 +164,8 @@ if "jemey_mode" not in st.session_state:
         st.session_state.jemey_mode = "Normal"
 
 # === Convert image to base64 ===
-def get_base64_image(path):
-    with open(path, "rb") as img_file:
+def get_base64_image(LOGO_PATH):
+    with open(LOGO_PATH, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
 # === Render Jemey Sidebar Logo & Title ===
