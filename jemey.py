@@ -200,7 +200,8 @@ if st.session_state.jemey_mode != "Full":
             with open(MODE_FILE, "w") as f:
                 f.write("Full")
             st.sidebar.success("✅ Jemey Engine Activated")
-            st.experimental_rerun()
+            st.rerun()
+
         else:
             st.sidebar.error("❌ Wrong password. Try again.")
 else:
