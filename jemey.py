@@ -152,7 +152,7 @@ tabs = st.tabs([
 
 # === CONFIG ===
 FULL_JEMEY_PASSWORD = "ahmedelite"  # Set your unlock password
-LOGO_PATH = "jemey.png"  # Your logo path
+LOGO_PATH = "C:/Users/ahmed/Downloads/jemeyai/logos/jemey.png"  # Your logo path
 MODE_FILE = "jemey_mode.txt"  # For saving mode across sessions
 
 # === Load saved mode if exists ===
@@ -210,7 +210,8 @@ else:
         with open(MODE_FILE, "w") as f:
             f.write("Normal")
         st.sidebar.info("🔐 Jemey is now in Normal Mode")
-        st.experimental_rerun()
+        st.rerun()
+
 
 # === Show logo after logic ===
 render_logo_sidebar()
@@ -468,11 +469,8 @@ with tabs[4]:
         df['MACD'] = df['Close'].ewm(span=12, adjust=False).mean() - df['Close'].ewm(span=26, adjust=False).mean()
         df['Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
         df['MACD_Hist'] = df['MACD'] - df['Signal']
-
-        # 📌 Technical Analysis Summary Panel
-        st.subheader("📌 Technical Analysis Summary")
-        col1, col2, col3, col4 = st.columns(4)
-
+         
+         # 🧮 Live Indicator Values
         rsi = df['RSI'].iloc[-1]
         macd = df['MACD'].iloc[-1]
         signal = df['Signal'].iloc[-1]
@@ -481,31 +479,105 @@ with tabs[4]:
         bb_pos = (close - df['Low'].min()) / (df['High'].max() - df['Low'].min()) * 100
         atr_pct = (atr / close) * 100
 
-        col1.metric("RSI", f"{rsi:.2f}")
-        col2.metric("MACD", f"{macd:.2f}")
-        col3.metric("BB Position", f"{bb_pos:.1f}%")
-        col4.metric("Volatility (ATR)", f"{atr_pct:.2f}%")
+        # === ✨ JEMEY Stylish Summary Panel ===
+        symbol = "BTC-USD"
+        rsi = 54.58
+        macd = -1036.76
+        bb_position = "68.9%"
+        volatility = "4.99%"
 
-        # 📌 Moving Average Analysis
-        st.subheader("📌 Moving Average Analysis")
-        ema_crosses = []
+        ema20_50 = "Bearish"
+        ema50_100 = "Bearish"
+        ema100_200 = "Bullish"
+        overall_trend = "Bearish"
 
-        def detect_cross(short, long):
-            s = df[short]
-            l = df[long]
-            if s.iloc[-1] > l.iloc[-1] and s.iloc[-2] <= l.iloc[-2]:
-                return f"Golden Cross ({short} ↑ {long})"
-            elif s.iloc[-1] < l.iloc[-1] and s.iloc[-2] >= l.iloc[-2]:
-                return f"Death Cross ({short} ↓ {long})"
-            return f"No Cross ({short} vs {long})"
+            # Section Header
+        st.markdown("## 📊 Technical Analysis Summary of `{}`".format(symbol))
 
-        ema_crosses.append(("EMA20", "EMA50", detect_cross("EMA20", "EMA50")))
-        ema_crosses.append(("EMA50", "EMA100", detect_cross("EMA50", "EMA100")))
-        ema_crosses.append(("EMA100", "EMA200", detect_cross("EMA100", "EMA200")))
+            # --- Helper function to draw styled metric cards ---
+        def card(title, value, color, subtitle, bullets):
+                html = f"""
+                <div style='background-color:{color}; padding:20px; border-radius:10px; width:320px; margin:10px;'>
+                    <h4 style='margin-bottom:5px;'>{title}</h4>
+                    <h2 style='margin:5px 0;'>{value}</h2>
+                    <p style='margin-top:0;'><strong>{subtitle}</strong></p>
+                    <ul style='padding-left: 20px;'>
+                        {''.join(f"<li>{item}</li>" for item in bullets)}
+                    </ul>
+                </div>
+                """
+                return html
 
-        for short, long, cross in ema_crosses:
-            st.markdown(f"**{short} vs {long}:** {cross}")
+            # --- Display all summary metric cards in rows ---
+        st.markdown("<div style='display:flex; flex-wrap:wrap;'>", unsafe_allow_html=True)
 
+        st.markdown(card("RSI", rsi, "#1c2d48", "Normal Trading Range (RSI 30-70)", [
+                "Normal market conditions with balanced buying/selling",
+                "Focus on trend following strategies",
+                "Look for RSI direction and momentum",
+                "Use other indicators for trade signals"
+            ]), unsafe_allow_html=True)
+
+        st.markdown(card("MACD", macd, "#1f4e3d", "Bullish MACD Cross", [
+                "Momentum is shifting bullish",
+                "Consider long positions with positive histogram",
+                "Stronger signal if crossover occurs below zero",
+                "Use RSI and BB confirmation for better entries"
+            ]), unsafe_allow_html=True)
+
+        st.markdown(card("BB Position", bb_position, "#223b54", "Price Within Bands", [
+                "Normal price movement within statistical range",
+                "Watch for potential breakout if bands narrow",
+                "Use other indicators to determine direction",
+                "Consider setting alerts for band breaks"
+            ]), unsafe_allow_html=True)
+
+        st.markdown(card("Volatility (ATR)", volatility, "#4b2a2a", "High Volatility (>3%)", [
+                "Large price movements are common",
+                "Widen stop losses to account for swings",
+                "Reduce position sizes to manage risk",
+                "Consider staying out if too volatile"
+            ]), unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+            # --- Moving Averages Section ---
+        st.markdown("## 📈 Moving Average Analysis")
+        st.markdown("<div style='display:flex; flex-wrap:wrap;'>", unsafe_allow_html=True)
+
+        def trend_card(title, trend, explanation_title, explanation_points):
+                color = "#3a1f1f" if trend == "Bearish" else "#1f3a2e"
+                return card(title, trend, color, explanation_title, explanation_points)
+
+        st.markdown(trend_card("EMA20/50 Cross", ema20_50, "Death Cross (Bearish)", [
+                "Shorter EMA crossed below longer EMA",
+                "Strong bearish momentum signal",
+                "Consider short positions with confirmation",
+                "Use resistance levels for stop placement"
+            ]), unsafe_allow_html=True)
+
+        st.markdown(trend_card("EMA50/100 Cross", ema50_100, "Death Cross (Bearish)", [
+                "Shorter EMA crossed below longer EMA",
+                "Strong bearish momentum signal",
+                "Consider short positions with confirmation",
+                "Use resistance levels for stop placement"
+            ]), unsafe_allow_html=True)
+
+        st.markdown(trend_card("EMA100/200 Cross", ema100_200, "Golden Cross (Bullish)", [
+                "Shorter EMA crossed above longer EMA",
+                "Strong bullish momentum signal",
+                "Consider long positions with confirmation",
+                "Use support levels for stop placement"
+            ]), unsafe_allow_html=True)
+
+        st.markdown(trend_card("Overall EMA Trend", overall_trend, "Strong Bearish Trend", [
+                "Multiple EMA crosses confirm downtrend",
+                "Higher timeframe momentum is negative",
+                "Look for rallies to EMAs as resistance",
+                "Consider longer-term short positions"
+            ]), unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
         # 📊 Price + EMA Chart
         st.subheader(f"📈 Price Chart + EMA for {active_symbol}")
         fig = go.Figure()
