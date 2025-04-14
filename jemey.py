@@ -207,7 +207,7 @@ def render_logo_sidebar():
     mode = st.session_state.get("jemey_mode", "Normal")
 
     if mode == "Full":
-        jemey_title = "💠 JEMEY Engine"
+        jemey_title = "💠JEMEY Engine"
         jemey_color = "#00f0ff"
     else:
         jemey_title = "🤖 JEMEY Normal"
