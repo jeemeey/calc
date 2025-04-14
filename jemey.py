@@ -493,49 +493,67 @@ with tabs[4]:
         overall_trend = "Bearish"
 
         # Display section header
-        st.markdown("## 📊 Technical Analysis Summary of `BTC-USD`")
+        # ✅ Display Technical Cards in Same Style Side by Side (Preserves original layout)
 
-        # Row 1: RSI, MACD, BB Position, Volatility (4 cards side by side)
+        def render_card(title, value, color, subtitle, bullets):
+            card_html = f"""
+            <div style='
+                background-color:{color};
+                padding:15px;
+                border-radius:10px;
+                margin:5px 5px;
+                height: 310px;
+                overflow: auto;
+                color: white;
+            '>
+                <h5 style='margin-bottom:5px;'>{title}</h5>
+                <h3 style='margin:5px 0;'>{value}</h3>
+                <p style='margin-top:0; font-weight: bold; color:#ddd;'>{subtitle}</p>
+                <ul style='padding-left: 18px; margin: 5px 0 0 0; font-size: 13px; color:#eee;'>
+                    {''.join(f"<li>{item}</li>" for item in bullets)}
+                </ul>
+            </div>
+            """
+            return card_html
+
+
+        st.markdown("## 📊 Technical Analysis Summary")
+
+        # 🧱 Create 4 columns for the 4 cards
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            st.markdown("### RSI")
-            st.markdown("**Value:** 54.58")
-            st.markdown("Normal Trading Range (RSI 30-70)")
-            st.markdown("- Normal market conditions with balanced buying/selling")
-            st.markdown("- Focus on trend following strategies")
-            st.markdown("- Look for RSI direction and momentum")
-            st.markdown("- Use other indicators for trade signals")
+            st.markdown(render_card("RSI", rsi, "#1c2d48", "Normal Trading Range (RSI 30-70)", [
+                "Normal market conditions with balanced buying/selling",
+                "Focus on trend following strategies",
+                "Look for RSI direction and momentum",
+                "Use other indicators for trade signals"
+            ]), unsafe_allow_html=True)
 
         with col2:
-            st.markdown("### MACD")
-            st.markdown("**Value:** -1036.76")
-            st.markdown("Bullish MACD Cross")
-            st.markdown("- Momentum is shifting bullish")
-            st.markdown("- Consider long positions with positive histogram")
-            st.markdown("- Stronger signal if crossover occurs below zero")
-            st.markdown("- Use RSI and BB confirmation for better entries")
+            st.markdown(render_card("MACD", macd, "#1f4e3d", "Bullish MACD Cross", [
+                "Momentum is shifting bullish",
+                "Consider long positions with positive histogram",
+                "Stronger signal if crossover occurs below zero",
+                "Use RSI and BB confirmation for better entries"
+            ]), unsafe_allow_html=True)
 
         with col3:
-            st.markdown("### BB Position")
-            st.markdown("**Value:** 68.9%")
-            st.markdown("Price Within Bands")
-            st.markdown("- Normal price movement within statistical range")
-            st.markdown("- Watch for potential breakout if bands narrow")
-            st.markdown("- Use other indicators to determine direction")
-            st.markdown("- Consider setting alerts for band breaks")
+            st.markdown(render_card("BB Position", bb_position, "#223b54", "Price Within Bands", [
+                "Normal price movement within statistical range",
+                "Watch for potential breakout if bands narrow",
+                "Use other indicators to determine direction",
+                "Consider setting alerts for band breaks"
+            ]), unsafe_allow_html=True)
 
         with col4:
-            st.markdown("### Volatility (ATR)")
-            st.markdown("**Value:** 4.99%")
-            st.markdown("High Volatility (>3%)")
-            st.markdown("- Large price movements are common")
-            st.markdown("- Widen stop losses to account for swings")
-            st.markdown("- Reduce position sizes to manage risk")
-            st.markdown("- Consider staying out if too volatile")
+            st.markdown(render_card("Volatility (ATR)", volatility, "#4b2a2a", "High Volatility (>3%)", [
+                "Large price movements are common",
+                "Widen stop losses to account for swings",
+                "Reduce position sizes to manage risk",
+                "Consider staying out if too volatile"
+            ]), unsafe_allow_html=True)
 
-        # Display section header
-        st.markdown("## 📈 Moving Average Analysis")
 
         # Row 2: EMA Crosses
         col5, col6, col7, col8 = st.columns(4)
@@ -1142,49 +1160,67 @@ with tabs[4]:
         overall_trend = "Bearish"
 
         # Display section header
-        st.markdown("## 📊 Technical Analysis Summary of `BTC-USD`")
+        # ✅ Display Technical Cards in Same Style Side by Side (Preserves original layout)
 
-        # Row 1: RSI, MACD, BB Position, Volatility (4 cards side by side)
+        def render_card(title, value, color, subtitle, bullets):
+            card_html = f"""
+            <div style='
+                background-color:{color};
+                padding:15px;
+                border-radius:10px;
+                margin:5px 5px;
+                height: 310px;
+                overflow: auto;
+                color: white;
+            '>
+                <h5 style='margin-bottom:5px;'>{title}</h5>
+                <h3 style='margin:5px 0;'>{value}</h3>
+                <p style='margin-top:0; font-weight: bold; color:#ddd;'>{subtitle}</p>
+                <ul style='padding-left: 18px; margin: 5px 0 0 0; font-size: 13px; color:#eee;'>
+                    {''.join(f"<li>{item}</li>" for item in bullets)}
+                </ul>
+            </div>
+            """
+            return card_html
+
+
+        st.markdown("## 📊 Technical Analysis Summary")
+
+        # 🧱 Create 4 columns for the 4 cards
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            st.markdown("### RSI")
-            st.markdown("**Value:** 54.58")
-            st.markdown("Normal Trading Range (RSI 30-70)")
-            st.markdown("- Normal market conditions with balanced buying/selling")
-            st.markdown("- Focus on trend following strategies")
-            st.markdown("- Look for RSI direction and momentum")
-            st.markdown("- Use other indicators for trade signals")
+            st.markdown(render_card("RSI", rsi, "#1c2d48", "Normal Trading Range (RSI 30-70)", [
+                "Normal market conditions with balanced buying/selling",
+                "Focus on trend following strategies",
+                "Look for RSI direction and momentum",
+                "Use other indicators for trade signals"
+            ]), unsafe_allow_html=True)
 
         with col2:
-            st.markdown("### MACD")
-            st.markdown("**Value:** -1036.76")
-            st.markdown("Bullish MACD Cross")
-            st.markdown("- Momentum is shifting bullish")
-            st.markdown("- Consider long positions with positive histogram")
-            st.markdown("- Stronger signal if crossover occurs below zero")
-            st.markdown("- Use RSI and BB confirmation for better entries")
+            st.markdown(render_card("MACD", macd, "#1f4e3d", "Bullish MACD Cross", [
+                "Momentum is shifting bullish",
+                "Consider long positions with positive histogram",
+                "Stronger signal if crossover occurs below zero",
+                "Use RSI and BB confirmation for better entries"
+            ]), unsafe_allow_html=True)
 
         with col3:
-            st.markdown("### BB Position")
-            st.markdown("**Value:** 68.9%")
-            st.markdown("Price Within Bands")
-            st.markdown("- Normal price movement within statistical range")
-            st.markdown("- Watch for potential breakout if bands narrow")
-            st.markdown("- Use other indicators to determine direction")
-            st.markdown("- Consider setting alerts for band breaks")
+            st.markdown(render_card("BB Position", bb_position, "#223b54", "Price Within Bands", [
+                "Normal price movement within statistical range",
+                "Watch for potential breakout if bands narrow",
+                "Use other indicators to determine direction",
+                "Consider setting alerts for band breaks"
+            ]), unsafe_allow_html=True)
 
         with col4:
-            st.markdown("### Volatility (ATR)")
-            st.markdown("**Value:** 4.99%")
-            st.markdown("High Volatility (>3%)")
-            st.markdown("- Large price movements are common")
-            st.markdown("- Widen stop losses to account for swings")
-            st.markdown("- Reduce position sizes to manage risk")
-            st.markdown("- Consider staying out if too volatile")
+            st.markdown(render_card("Volatility (ATR)", volatility, "#4b2a2a", "High Volatility (>3%)", [
+                "Large price movements are common",
+                "Widen stop losses to account for swings",
+                "Reduce position sizes to manage risk",
+                "Consider staying out if too volatile"
+            ]), unsafe_allow_html=True)
 
-        # Display section header
-        st.markdown("## 📈 Moving Average Analysis")
 
         # Row 2: EMA Crosses
         col5, col6, col7, col8 = st.columns(4)
@@ -1791,49 +1827,67 @@ with tabs[4]:
         overall_trend = "Bearish"
 
         # Display section header
-        st.markdown("## 📊 Technical Analysis Summary of `BTC-USD`")
+        # ✅ Display Technical Cards in Same Style Side by Side (Preserves original layout)
 
-        # Row 1: RSI, MACD, BB Position, Volatility (4 cards side by side)
+        def render_card(title, value, color, subtitle, bullets):
+            card_html = f"""
+            <div style='
+                background-color:{color};
+                padding:15px;
+                border-radius:10px;
+                margin:5px 5px;
+                height: 310px;
+                overflow: auto;
+                color: white;
+            '>
+                <h5 style='margin-bottom:5px;'>{title}</h5>
+                <h3 style='margin:5px 0;'>{value}</h3>
+                <p style='margin-top:0; font-weight: bold; color:#ddd;'>{subtitle}</p>
+                <ul style='padding-left: 18px; margin: 5px 0 0 0; font-size: 13px; color:#eee;'>
+                    {''.join(f"<li>{item}</li>" for item in bullets)}
+                </ul>
+            </div>
+            """
+            return card_html
+
+
+        st.markdown("## 📊 Technical Analysis Summary")
+
+        # 🧱 Create 4 columns for the 4 cards
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            st.markdown("### RSI")
-            st.markdown("**Value:** 54.58")
-            st.markdown("Normal Trading Range (RSI 30-70)")
-            st.markdown("- Normal market conditions with balanced buying/selling")
-            st.markdown("- Focus on trend following strategies")
-            st.markdown("- Look for RSI direction and momentum")
-            st.markdown("- Use other indicators for trade signals")
+            st.markdown(render_card("RSI", rsi, "#1c2d48", "Normal Trading Range (RSI 30-70)", [
+                "Normal market conditions with balanced buying/selling",
+                "Focus on trend following strategies",
+                "Look for RSI direction and momentum",
+                "Use other indicators for trade signals"
+            ]), unsafe_allow_html=True)
 
         with col2:
-            st.markdown("### MACD")
-            st.markdown("**Value:** -1036.76")
-            st.markdown("Bullish MACD Cross")
-            st.markdown("- Momentum is shifting bullish")
-            st.markdown("- Consider long positions with positive histogram")
-            st.markdown("- Stronger signal if crossover occurs below zero")
-            st.markdown("- Use RSI and BB confirmation for better entries")
+            st.markdown(render_card("MACD", macd, "#1f4e3d", "Bullish MACD Cross", [
+                "Momentum is shifting bullish",
+                "Consider long positions with positive histogram",
+                "Stronger signal if crossover occurs below zero",
+                "Use RSI and BB confirmation for better entries"
+            ]), unsafe_allow_html=True)
 
         with col3:
-            st.markdown("### BB Position")
-            st.markdown("**Value:** 68.9%")
-            st.markdown("Price Within Bands")
-            st.markdown("- Normal price movement within statistical range")
-            st.markdown("- Watch for potential breakout if bands narrow")
-            st.markdown("- Use other indicators to determine direction")
-            st.markdown("- Consider setting alerts for band breaks")
+            st.markdown(render_card("BB Position", bb_position, "#223b54", "Price Within Bands", [
+                "Normal price movement within statistical range",
+                "Watch for potential breakout if bands narrow",
+                "Use other indicators to determine direction",
+                "Consider setting alerts for band breaks"
+            ]), unsafe_allow_html=True)
 
         with col4:
-            st.markdown("### Volatility (ATR)")
-            st.markdown("**Value:** 4.99%")
-            st.markdown("High Volatility (>3%)")
-            st.markdown("- Large price movements are common")
-            st.markdown("- Widen stop losses to account for swings")
-            st.markdown("- Reduce position sizes to manage risk")
-            st.markdown("- Consider staying out if too volatile")
+            st.markdown(render_card("Volatility (ATR)", volatility, "#4b2a2a", "High Volatility (>3%)", [
+                "Large price movements are common",
+                "Widen stop losses to account for swings",
+                "Reduce position sizes to manage risk",
+                "Consider staying out if too volatile"
+            ]), unsafe_allow_html=True)
 
-        # Display section header
-        st.markdown("## 📈 Moving Average Analysis")
 
         # Row 2: EMA Crosses
         col5, col6, col7, col8 = st.columns(4)
@@ -2440,49 +2494,67 @@ with tabs[4]:
         overall_trend = "Bearish"
 
         # Display section header
-        st.markdown("## 📊 Technical Analysis Summary of `BTC-USD`")
+        # ✅ Display Technical Cards in Same Style Side by Side (Preserves original layout)
 
-        # Row 1: RSI, MACD, BB Position, Volatility (4 cards side by side)
+        def render_card(title, value, color, subtitle, bullets):
+            card_html = f"""
+            <div style='
+                background-color:{color};
+                padding:15px;
+                border-radius:10px;
+                margin:5px 5px;
+                height: 310px;
+                overflow: auto;
+                color: white;
+            '>
+                <h5 style='margin-bottom:5px;'>{title}</h5>
+                <h3 style='margin:5px 0;'>{value}</h3>
+                <p style='margin-top:0; font-weight: bold; color:#ddd;'>{subtitle}</p>
+                <ul style='padding-left: 18px; margin: 5px 0 0 0; font-size: 13px; color:#eee;'>
+                    {''.join(f"<li>{item}</li>" for item in bullets)}
+                </ul>
+            </div>
+            """
+            return card_html
+
+
+        st.markdown("## 📊 Technical Analysis Summary")
+
+        # 🧱 Create 4 columns for the 4 cards
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            st.markdown("### RSI")
-            st.markdown("**Value:** 54.58")
-            st.markdown("Normal Trading Range (RSI 30-70)")
-            st.markdown("- Normal market conditions with balanced buying/selling")
-            st.markdown("- Focus on trend following strategies")
-            st.markdown("- Look for RSI direction and momentum")
-            st.markdown("- Use other indicators for trade signals")
+            st.markdown(render_card("RSI", rsi, "#1c2d48", "Normal Trading Range (RSI 30-70)", [
+                "Normal market conditions with balanced buying/selling",
+                "Focus on trend following strategies",
+                "Look for RSI direction and momentum",
+                "Use other indicators for trade signals"
+            ]), unsafe_allow_html=True)
 
         with col2:
-            st.markdown("### MACD")
-            st.markdown("**Value:** -1036.76")
-            st.markdown("Bullish MACD Cross")
-            st.markdown("- Momentum is shifting bullish")
-            st.markdown("- Consider long positions with positive histogram")
-            st.markdown("- Stronger signal if crossover occurs below zero")
-            st.markdown("- Use RSI and BB confirmation for better entries")
+            st.markdown(render_card("MACD", macd, "#1f4e3d", "Bullish MACD Cross", [
+                "Momentum is shifting bullish",
+                "Consider long positions with positive histogram",
+                "Stronger signal if crossover occurs below zero",
+                "Use RSI and BB confirmation for better entries"
+            ]), unsafe_allow_html=True)
 
         with col3:
-            st.markdown("### BB Position")
-            st.markdown("**Value:** 68.9%")
-            st.markdown("Price Within Bands")
-            st.markdown("- Normal price movement within statistical range")
-            st.markdown("- Watch for potential breakout if bands narrow")
-            st.markdown("- Use other indicators to determine direction")
-            st.markdown("- Consider setting alerts for band breaks")
+            st.markdown(render_card("BB Position", bb_position, "#223b54", "Price Within Bands", [
+                "Normal price movement within statistical range",
+                "Watch for potential breakout if bands narrow",
+                "Use other indicators to determine direction",
+                "Consider setting alerts for band breaks"
+            ]), unsafe_allow_html=True)
 
         with col4:
-            st.markdown("### Volatility (ATR)")
-            st.markdown("**Value:** 4.99%")
-            st.markdown("High Volatility (>3%)")
-            st.markdown("- Large price movements are common")
-            st.markdown("- Widen stop losses to account for swings")
-            st.markdown("- Reduce position sizes to manage risk")
-            st.markdown("- Consider staying out if too volatile")
+            st.markdown(render_card("Volatility (ATR)", volatility, "#4b2a2a", "High Volatility (>3%)", [
+                "Large price movements are common",
+                "Widen stop losses to account for swings",
+                "Reduce position sizes to manage risk",
+                "Consider staying out if too volatile"
+            ]), unsafe_allow_html=True)
 
-        # Display section header
-        st.markdown("## 📈 Moving Average Analysis")
 
         # Row 2: EMA Crosses
         col5, col6, col7, col8 = st.columns(4)
